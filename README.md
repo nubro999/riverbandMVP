@@ -1,297 +1,147 @@
-# 리버밴드 / GPU Rental Platform - Architecture Specification (C4 Model with Mermaid)
 
-## Document Information
-
-- **Version**: 1.0.0
-- **Last Updated**: 2025-10-30
-- **Status**: Draft
-- **Architecture Model**: C4 (Context, Containers, Components, Code)
-
----
+# GPU Rental Platform - Investment Deck
 
 ## Executive Summary
 
-본 플랫폼은 블록체인 기반 탈중앙화 GPU 대여 시스템으로, 스마트 컨트랙트를 통한 중개와 IPFS를 통한 Docker 이미지 배포를 핵심으로 합니다.
+**블록체인 기반 탈중앙화 GPU 마켓플레이스**
 
-**핵심 가치:**
+유휴 GPU 리소스를 필요한 사람에게 연결하는 P2P 플랫폼으로, 중앙화된 중개자 없이 투명하고 효율적인 거래를 실현합니다.
 
-- 온체인 중개로 투명한 거래
-- IPFS로 검열 저항성 있는 이미지 배포
-- P2P 기반 비용 효율적 대역폭 활용
-- 토큰 이코노미를 통한 생태계 활성화
+### 핵심 가치 제안
+
+- **투명성**: 스마트 컨트랙트 기반 자동화된 거래
+- **효율성**: P2P 직거래로 중개 수수료 최소화 (2%)
+- **확장성**: 글로벌 분산 네트워크
+- **신뢰성**: 블록체인 기반 평판 시스템
+
+### 시장 기회
+
+- AI/ML 시장의 폭발적 성장 (연평균 40%+)
+- GPU 수요 급증 vs 공급 부족
+- 클라우드 GPU 비용 절감 니즈 (최대 70% 저렴)
 
 ---
 
-# Level 1: System Context Diagram
+# Platform Overview
 
-## 1.1 Context Overview
+## System Architecture
 
 ```mermaid
 graph TB
-    subgraph External["External Systems"]
-        IPFS[IPFS Network<br/>Docker 이미지 저장/배포]
-        BC[Blockchain Network<br/>Custom EVM L1<br/>거래 중개 & 결제]
-        Wallet[Wallet<br/>MetaMask<br/>인증 & 서명]
+    subgraph Users["Ecosystem Participants"]
+        Renter[GPU Renters<br/>━━━━━━━━<br/>AI/ML 연구자<br/>개발자<br/>스타트업]
+        Provider[GPU Providers<br/>━━━━━━━━<br/>데이터센터<br/>마이닝 업체<br/>개인 사용자]
     end
     
-    subgraph Platform["GPU Rental Platform<br/>Blockchain + IPFS"]
-        Core[Platform Core]
+    subgraph Platform["GPU Rental Platform"]
+        Core[Core Platform<br/>━━━━━━━━<br/>• 스마트 컨트랙트<br/>• 매칭 엔진<br/>• 평판 시스템]
     end
     
-    Renter[GPU Renters<br/>사용자<br/>━━━━━━━━<br/>• AI/ML 모델 학습<br/>• 렌더링 작업<br/>• 추론 서비스]
-    Provider[GPU Providers<br/>리소스 제공자<br/>━━━━━━━━<br/>• 유휴 GPU 등록<br/>• 수익 창출<br/>• IPFS 노드 운영]
-    Operator[Platform Operators<br/>운영자<br/>━━━━━━━━<br/>• 컨트랙트 관리<br/>• 분쟁 조정<br/>• 거버넌스]
+    subgraph Infrastructure["Infrastructure"]
+        BC[Blockchain<br/>━━━━━━━━<br/>결제 & 계약]
+        IPFS[IPFS<br/>━━━━━━━━<br/>파일 저장]
+    end
     
-    Renter <-->|Docker 이미지 업로드<br/>GPU 검색 & 선택<br/>토큰 결제<br/>인스턴스 모니터링| Core
-    Provider <-->|GPU 등록 & 가격<br/>인스턴스 실행<br/>토큰 수익<br/>가용성 업데이트| Core
-    Operator <-->|거버넌스<br/>분쟁 해결| Core
+    Renter <-->|대여 & 결제| Core
+    Provider <-->|제공 & 수익| Core
+    Core <--> BC
+    Core <--> IPFS
     
-    Core <-->|libp2p<br/>P2P 통신| IPFS
-    Core <-->|JSON-RPC<br/>트랜잭션| BC
-    Renter <-->|Web3.js<br/>인증| Wallet
-    Provider <-->|Web3.js<br/>서명| Wallet
-    
+    style Users fill:#e8f5e9
     style Platform fill:#e1f5ff
-    style External fill:#fff4e6
-    style Renter fill:#e8f5e9
-    style Provider fill:#f3e5f5
-    style Operator fill:#fce4ec
-```
-
-## 1.2 Actors & Responsibilities
-
-### GPU Renters (사용자)
-
-**역할**: GPU 리소스를 빌려서 AI/ML 워크로드 실행
-
-**주요 활동**:
-- Docker 이미지를 IPFS에 업로드
-- GPU 인스턴스 검색 및 선택
-- 토큰으로 대여 비용 지불
-- 인스턴스 실행 및 모니터링
-
-**예시**:
-- AI 연구자가 모델 학습
-- 개발자가 렌더링 작업
-- 스타트업이 추론 서비스 운영
-
-### GPU Providers (리소스 제공자)
-
-**역할**: 유휴 GPU 리소스를 플랫폼에 등록하여 수익 창출
-
-**주요 활동**:
-- GPU 리소스 등록 (스펙, 가격)
-- IPFS 노드 운영 (이미지 캐싱)
-- 사용자 인스턴스 실행
-- 토큰으로 수익 수취
-
-**예시**:
-- 마이닝 업체의 유휴 GPU
-- 개인 게이머의 고성능 PC
-- 데이터센터의 잉여 리소스
-
-### Platform Operators (운영자)
-
-**역할**: 플랫폼 인프라 유지 및 거버넌스
-
-**주요 활동**:
-- 스마트 컨트랙트 업그레이드
-- 분쟁 조정
-- 프로토콜 파라미터 조정
-
-## 1.3 External Systems
-
-### IPFS Network
-- **목적**: Docker 이미지 저장 및 배포
-- **통신 방식**: libp2p (P2P)
-- **데이터**: Docker 이미지, 설정 파일
-
-### Blockchain Network (Custom EVM L1)
-- **목적**: 거래 중개, 결제, 평판 관리
-- **통신 방식**: JSON-RPC
-- **데이터**: 거래 내역, 리소스 메타데이터, 토큰
-
-### Wallet (MetaMask)
-- **목적**: 사용자 인증 및 트랜잭션 서명
-- **통신 방식**: Web3.js / ethers.js
-- **데이터**: 개인키, 서명
-
----
-
-# Level 2: Container Diagram
-
-## 2.1 High-Level Architecture
-
-```mermaid
-graph TB
-    subgraph UserDomain["User Domain"]
-        Frontend[Web Frontend<br/>━━━━━━━━<br/>React SPA<br/>━━━━━━━━<br/>• Wallet 연동<br/>• GPU 브라우징<br/>• Job 실행<br/>• 실시간 모니터링]
-        
-        ProviderAgent[Provider Agent<br/>━━━━━━━━<br/>Go Daemon<br/>━━━━━━━━<br/>• 리소스 모니터링<br/>• Container 관리<br/>• IPFS 클라이언트<br/>• 작업 증명]
-    end
-    
-    subgraph PlatformCore["Platform Core"]
-        API[API Gateway<br/>━━━━━━━━<br/>Node.js<br/>━━━━━━━━<br/>• REST API<br/>• WebSocket<br/>• Auth Middleware<br/>• Rate Limiting]
-        
-        SC[Smart Contracts<br/>━━━━━━━━<br/>Solidity 0.8.20<br/>━━━━━━━━<br/>• Registry<br/>• Marketplace<br/>• Payment<br/>• Reputation]
-        
-        Indexer[Indexer Service<br/>━━━━━━━━<br/>Go + GraphQL<br/>━━━━━━━━<br/>• Event Listener<br/>• DB Writer<br/>• Query API<br/>• Cache Layer]
-        
-        Oracle[Oracle Service<br/>━━━━━━━━<br/>Go<br/>━━━━━━━━<br/>• Uptime Check<br/>• Proof Verify<br/>• Price Feed<br/>• Dispute Resolve]
-    end
-    
-    subgraph Infrastructure["Infrastructure Layer"]
-        BCNode[Blockchain Node<br/>━━━━━━━━<br/>Custom EVM L1<br/>━━━━━━━━<br/>• PoS Consensus<br/>• Block Time: 2s<br/>• Gas Limit: 30M]
-        
-        IPFSCluster[IPFS Cluster<br/>━━━━━━━━<br/>Kubo + Cluster<br/>━━━━━━━━<br/>• P2P Network<br/>• DHT<br/>• Content Pinning<br/>• Gateway]
-        
-        DB[(PostgreSQL<br/>━━━━━━━━<br/>• Metadata<br/>• Cache<br/>• Analytics)]
-    end
-    
-    Frontend -->|HTTPS<br/>REST + WebSocket| API
-    Frontend -->|JSON-RPC| SC
-    Frontend -->|HTTP Gateway| IPFSCluster
-    
-    ProviderAgent -->|HTTPS| API
-    ProviderAgent -->|JSON-RPC| SC
-    ProviderAgent -->|libp2p| IPFSCluster
-    
-    API -->|Contract Calls| SC
-    API -->|Read| DB
-    
-    SC -->|Deploy| BCNode
-    
-    Indexer -->|Subscribe Events| BCNode
-    Indexer -->|Write| DB
-    Indexer -->|GraphQL| API
-    
-    Oracle -->|Validate| ProviderAgent
-    Oracle -->|Submit Results| SC
-    
-    style UserDomain fill:#e8f5e9
-    style PlatformCore fill:#e1f5ff
     style Infrastructure fill:#fff4e6
 ```
 
-## 2.2 Container Descriptions
+### 주요 참여자
 
-### Web Frontend (React SPA)
+**GPU Renters (수요)**
 
-**Technology**: React 18, TypeScript, ethers.js, TailwindCSS
+- AI/ML 모델 학습이 필요한 연구자
+- 렌더링 작업이 필요한 크리에이터
+- 추론 서비스를 운영하는 기업
 
-**Responsibilities**:
-- 사용자 인터페이스 제공
-- 지갑 연동 (MetaMask)
-- 스마트 컨트랙트 상호작용
-- IPFS 이미지 업로드/다운로드
+**GPU Providers (공급)**
 
-**Communication**:
-- API Gateway: HTTPS (REST + WebSocket)
-- Blockchain: JSON-RPC
-- IPFS: HTTP Gateway
+- 유휴 GPU를 보유한 데이터센터
+- 채굴 중단 후 GPU 활용을 원하는 업체
+- 고성능 PC 소유자
 
-**Key Features**:
-```typescript
-// 주요 화면 구성
-- Dashboard: GPU 리스트, 내 인스턴스
-- Marketplace: Provider 검색, 필터링
-- Image Manager: IPFS 업로드/관리
-- Instance Console: 실시간 모니터링
-- Wallet: 잔액, 거래 내역
-```
+---
 
-### Provider Agent (Go Daemon)
+# Core Architecture
 
-**Technology**: Go, Docker SDK, IPFS go-ipfs, libp2p
-
-**Responsibilities**:
-- GPU 리소스 모니터링
-- Docker 컨테이너 관리
-- IPFS 이미지 캐싱 및 제공
-- 작업 증명 생성
-
-**Communication**:
-- API Gateway: HTTPS
-- Blockchain: JSON-RPC
-- IPFS: libp2p
-- Docker: Unix Socket
+## Technical Stack
 
 ```mermaid
 graph TB
-    subgraph ProviderAgent["Provider Agent"]
-        Monitor[Resource Monitor<br/>━━━━━━━━<br/>• GPU 사용률<br/>• 메모리<br/>• 온도<br/>• 전력]
-        
-        IPFSClient[IPFS Client<br/>━━━━━━━━<br/>• 이미지 캐싱<br/>• Pin 관리<br/>• P2P 통신]
-        
-        DockerMgr[Docker Manager<br/>━━━━━━━━<br/>• 컨테이너 생성<br/>• GPU 할당<br/>• 리소스 제한]
-        
-        Scheduler[Job Scheduler<br/>━━━━━━━━<br/>• Job 큐 관리<br/>• 우선순위<br/>• 스케줄링]
-        
-        BCClient[Blockchain Client<br/>━━━━━━━━<br/>• Event 리스닝<br/>• Proof 제출<br/>• 상태 업데이트]
-        
-        Monitor --> Scheduler
-        IPFSClient --> Scheduler
-        DockerMgr --> Scheduler
-        Scheduler --> BCClient
+    subgraph Frontend["사용자 인터페이스"]
+        Web[Web Application<br/>━━━━━━━━<br/>React + Web3<br/>━━━━━━━━<br/>• GPU 검색<br/>• 작업 제출<br/>• 실시간 모니터링]
     end
     
-    style ProviderAgent fill:#f3e5f5
+    subgraph Backend["플랫폼 서비스"]
+        API[API Gateway<br/>━━━━━━━━<br/>REST & WebSocket]
+        
+        SC[Smart Contracts<br/>━━━━━━━━<br/>• 리소스 등록<br/>• 주문 매칭<br/>• 결제 처리<br/>• 평판 관리]
+        
+        Oracle[Oracle Service<br/>━━━━━━━━<br/>• 가용성 검증<br/>• 성능 모니터링<br/>• 분쟁 해결]
+    end
+    
+    subgraph Infrastructure["인프라"]
+        BC[Blockchain<br/>━━━━━━━━<br/>스마트 컨트랙트 실행]
+        IPFS[IPFS Network<br/>━━━━━━━━<br/>분산 파일 저장]
+        DB[(Database<br/>━━━━━━━━<br/>메타데이터 캐시)]
+    end
+    
+    Web --> API
+    API --> SC
+    SC --> BC
+    API --> IPFS
+    API --> DB
+    Oracle --> BC
+    
+    style Frontend fill:#e8f5e9
+    style Backend fill:#e1f5ff
+    style Infrastructure fill:#fff4e6
 ```
 
-### API Gateway (Node.js)
+### 핵심 컴포넌트
 
-**Technology**: Node.js, Express, Socket.io, Redis
+**스마트 컨트랙트**
 
-**Responsibilities**:
-- RESTful API 제공
-- WebSocket 실시간 통신
-- 인증/인가 (JWT, Wallet Signature)
-- Rate Limiting
+- 리소스 등록 및 관리
+- 자동화된 매칭 및 결제
+- 투명한 평판 시스템
+- 분쟁 해결 메커니즘
 
-**Endpoints**:
-```typescript
-// REST API
-GET    /api/v1/gpus              // GPU 리스트
-GET    /api/v1/gpus/:id          // GPU 상세
-POST   /api/v1/instances         // 인스턴스 생성
-GET    /api/v1/instances/:id     // 인스턴스 상태
-DELETE /api/v1/instances/:id     // 인스턴스 종료
+**IPFS (분산 저장소)**
 
-GET    /api/v1/images            // 이미지 리스트
-POST   /api/v1/images/upload     // 이미지 업로드 (IPFS)
-GET    /api/v1/images/:cid       // 이미지 메타데이터
+- Docker 이미지 저장
+- P2P 파일 공유
+- 중앙화된 서버 불필요
 
-// WebSocket
-ws://api/instances/:id/logs      // 실시간 로그
-ws://api/instances/:id/metrics   // 실시간 메트릭
-```
+**Oracle (검증 시스템)**
 
-### Smart Contracts (Solidity)
+- Provider 가용성 실시간 체크
+- 성능 및 품질 보증
+- 자동화된 분쟁 해결
 
-**Technology**: Solidity 0.8.20, OpenZeppelin, Hardhat
+---
 
-**Core Contracts**:
-1. **GPUToken.sol**: ERC20 토큰
-2. **ResourceRegistry.sol**: GPU 리소스 등록
-3. **Marketplace.sol**: 매칭 및 주문 관리
-4. **PaymentEscrow.sol**: 에스크로 결제
-5. **ReputationSystem.sol**: 평판 관리
+# Business Logic
+
+## Smart Contract Architecture
 
 ```mermaid
 graph TD
-    Token[GPUToken<br/>━━━━━━━━<br/>ERC20 Token<br/>━━━━━━━━<br/>• Transfer<br/>• Approve<br/>• Balance]
+    Token[GPU Token<br/>━━━━━━━━<br/>플랫폼 화폐]
     
-    Token --> Market[Marketplace<br/>━━━━━━━━<br/>• createJob<br/>• acceptJob<br/>• completeJob<br/>• disputeJob]
+    Token --> Market[Marketplace<br/>━━━━━━━━<br/>매칭 & 거래]
     
-    Token --> Escrow[PaymentEscrow<br/>━━━━━━━━<br/>• lockFunds<br/>• releaseFunds<br/>• refund<br/>• platformFee: 2%]
+    Token --> Escrow[Payment Escrow<br/>━━━━━━━━<br/>안전한 결제<br/>수수료: 2%]
     
-    Market --> Registry[ResourceRegistry<br/>━━━━━━━━<br/>• registerResource<br/>• updateAvailability<br/>• updatePricing<br/>• getResource]
+    Market --> Registry[Resource Registry<br/>━━━━━━━━<br/>GPU 등록 & 관리]
     
-    Escrow --> Registry
-    
-    Registry --> Reputation[ReputationSystem<br/>━━━━━━━━<br/>• updateReputation<br/>• getScore<br/>• penalize<br/>• reward]
-    
-    Market --> Reputation
+    Market --> Reputation[Reputation System<br/>━━━━━━━━<br/>신뢰도 평가]
     
     style Token fill:#fff9c4
     style Market fill:#b3e5fc
@@ -300,1097 +150,108 @@ graph TD
     style Reputation fill:#d1c4e9
 ```
 
-### Indexer Service (Go)
+### 거래 흐름
 
-**Technology**: Go, PostgreSQL, GraphQL
-
-**Responsibilities**:
-- 블록체인 이벤트 리스닝
-- 데이터 인덱싱 및 캐싱
-- GraphQL API 제공
-- 복잡한 쿼리 지원
-
-```mermaid
-sequenceDiagram
-    participant BC as Blockchain
-    participant Listener as Event Listener
-    participant Processor as Event Processor
-    participant DB as PostgreSQL
-    participant GQL as GraphQL Server
-    participant Client as API Gateway
-    
-    BC->>Listener: Emit Event
-    Listener->>Processor: Parse Event
-    Processor->>Processor: Validate & Transform
-    Processor->>DB: Batch Insert
-    Client->>GQL: Query Request
-    GQL->>DB: SELECT
-    DB->>GQL: Result
-    GQL->>Client: GraphQL Response
-```
-
-### Oracle Service (Go)
-
-**Technology**: Go, Chainlink (optional)
-
-**Responsibilities**:
-- Provider 가용성 검증
-- 작업 증명 검증
-- 외부 데이터 피드 (GPU 가격)
-- 분쟁 해결 데이터 제공
-
-```mermaid
-graph TB
-    subgraph Oracle["Oracle Service"]
-        Validator[Validator<br/>━━━━━━━━<br/>• Uptime Check<br/>• Proof Verify<br/>• Performance]
-        
-        Aggregator[Aggregator<br/>━━━━━━━━<br/>• Collect Results<br/>• Calculate Scores<br/>• Generate Evidence]
-        
-        Reporter[Blockchain Reporter<br/>━━━━━━━━<br/>• Submit Results<br/>• Update Reputation<br/>• Trigger Penalty]
-        
-        Validator --> Aggregator
-        Aggregator --> Reporter
-    end
-    
-    Provider[Provider Agent] -.->|Heartbeat<br/>Challenge-Response| Validator
-    Reporter -->|On-chain Transaction| BC[Blockchain]
-    
-    style Oracle fill:#ffe0b2
-```
-
-### Blockchain Node (Custom EVM L1)
-
-**Technology**: Geth (Go Ethereum) Fork
-
-**Configuration**:
-- Consensus: PoS (Proof of Stake)
-- Block Time: 2초
-- Gas Limit: 30M
-- Native Token: GPU Token
-
-### IPFS Cluster
-
-**Technology**: IPFS Kubo, IPFS Cluster
-
-```mermaid
-graph TB
-    subgraph Cluster["IPFS Cluster"]
-        N1[Node 1<br/>━━━━━━━━<br/>Pin 🔒<br/>Storage]
-        N2[Node 2<br/>━━━━━━━━<br/>Pin 🔒<br/>Storage]
-        N3[Node 3<br/>━━━━━━━━<br/>Pin 🔒<br/>Storage]
-        
-        Consensus[Cluster Consensus<br/>━━━━━━━━<br/>Raft/CRDT<br/>━━━━━━━━<br/>• Pin Coordination<br/>• Replication]
-        
-        N1 <--> Consensus
-        N2 <--> Consensus
-        N3 <--> Consensus
-    end
-    
-    Gateway[Gateway<br/>━━━━━━━━<br/>HTTP API<br/>━━━━━━━━<br/>• /ipfs/CID<br/>• Upload/Download]
-    
-    Consensus <--> Gateway
-    Gateway <--> Users[Users & Providers]
-    
-    style Cluster fill:#e8eaf6
-```
-
-### PostgreSQL
-
-**Purpose**: Off-chain 데이터 저장
-
-**Schema**:
-```sql
--- 캐시된 GPU 정보
-gpu_resources
-  - id
-  - provider_address
-  - gpu_model
-  - vcpu
-  - memory_gb
-  - price_per_hour
-  - availability
-  - reputation_score
-
--- 인스턴스 실행 히스토리
-instance_history
-  - id
-  - instance_id (onchain)
-  - user_address
-  - provider_address
-  - image_cid
-  - start_time
-  - end_time
-  - total_cost
-
--- IPFS 이미지 메타데이터
-images
-  - cid
-  - name
-  - size
-  - uploader
-  - download_count
-  - created_at
-```
-
----
-
-# Level 3: Component Diagram
-
-## 3.1 Smart Contract Components
-
-### 3.1.1 ResourceRegistry Contract
-
-```mermaid
-classDiagram
-    class ResourceRegistry {
-        <<contract>>
-        +mapping(bytes32 => GPUResource) resources
-        +mapping(address => bytes32[]) providerResources
-        +bytes32[] allResourceIds
-        
-        +registerResource(gpuModel, vcpu, memoryGB, storageGB, pricePerHour) bytes32
-        +updateAvailability(resourceId, available)
-        +updatePricing(resourceId, newPrice)
-        +getResource(resourceId) GPUResource
-        +getProviderResources(provider) bytes32[]
-        +updateUptime(resourceId, additionalSeconds)
-        +updateReputation(resourceId, newReputation)
-        
-        <<events>>
-        ResourceRegistered(resourceId, provider, gpuModel)
-        AvailabilityUpdated(resourceId, available)
-        PricingUpdated(resourceId, newPrice)
-    }
-    
-    class GPUResource {
-        <<struct>>
-        address provider
-        string gpuModel
-        uint16 vcpu
-        uint32 memoryGB
-        uint32 storageGB
-        uint256 pricePerHour
-        bool available
-        uint256 totalUptime
-        uint256 reputation
-        uint256 registeredAt
-    }
-    
-    ResourceRegistry *-- GPUResource
-```
-
-**Code Structure**:
-```solidity
-struct GPUResource {
-    address provider;
-    string gpuModel;      // "RTX4090", "A100"
-    uint16 vcpu;
-    uint32 memoryGB;
-    uint32 storageGB;
-    uint256 pricePerHour; // in tokens
-    bool available;
-    uint256 totalUptime;  // seconds
-    uint256 reputation;   // 0-1000
-}
-
-function registerResource(
-    string memory gpuModel,
-    uint16 vcpu,
-    uint32 memoryGB,
-    uint32 storageGB,
-    uint256 pricePerHour
-) external returns (bytes32 resourceId);
-```
-
-### 3.1.2 Marketplace Contract
-
-```mermaid
-classDiagram
-    class Marketplace {
-        <<contract>>
-        +IERC20 token
-        +ResourceRegistry registry
-        +PaymentEscrow escrow
-        +mapping(bytes32 => Job) jobs
-        +mapping(address => bytes32[]) userJobs
-        +mapping(address => bytes32[]) providerJobs
-        
-        +createJob(resourceId, imageCID, estimatedDuration) bytes32
-        +acceptJob(jobId)
-        +startJob(jobId)
-        +completeJob(jobId)
-        +disputeJob(jobId, reason)
-        +getJob(jobId) Job
-        
-        <<events>>
-        JobCreated(jobId, user, resourceId, imageCID)
-        JobAccepted(jobId, provider)
-        JobStarted(jobId, startTime)
-        JobCompleted(jobId, finalCost)
-        JobDisputed(jobId, initiator)
-    }
-    
-    class Job {
-        <<struct>>
-        bytes32 jobId
-        address user
-        address provider
-        bytes32 resourceId
-        string imageCID
-        uint256 estimatedDuration
-        uint256 maxCost
-        uint256 startTime
-        uint256 endTime
-        JobStatus status
-        uint256 finalCost
-    }
-    
-    class JobStatus {
-        <<enum>>
-        Created
-        Accepted
-        Running
-        Completed
-        Disputed
-        Cancelled
-    }
-    
-    Marketplace *-- Job
-    Job *-- JobStatus
-```
-
-**State Machine**:
 ```mermaid
 stateDiagram-v2
-    [*] --> Created: createJob()
-    
-    Created --> Accepted: acceptJob()
-    Created --> Cancelled: cancel()
-    
-    Accepted --> Running: startJob()
-    Accepted --> Disputed: disputeJob()
-    
-    Running --> Completed: completeJob()
-    Running --> Disputed: disputeJob()
-    
-    Disputed --> Resolved: oracleResolve()
+    [*] --> Created: 작업 생성
+    Created --> Accepted: Provider 수락
+    Accepted --> Running: 실행 시작
+    Running --> Completed: 완료
+    Running --> Disputed: 분쟁 발생
+    Disputed --> Resolved: 해결
     Resolved --> Completed
-    
     Completed --> [*]
-    Cancelled --> [*]
     
     note right of Created
-        Tokens locked
-        in escrow
+        토큰 에스크로 예치
     end note
     
     note right of Running
-        Billing clock
-        started
+        시간당 과금
     end note
     
     note right of Completed
-        Payment released
-        Reputation updated
+        자동 정산
     end note
 ```
 
-### 3.1.3 PaymentEscrow Contract
-
-```mermaid
-classDiagram
-    class PaymentEscrow {
-        <<contract>>
-        +IERC20 token
-        +uint256 platformFeePercent
-        +mapping(bytes32 => EscrowRecord) escrows
-        
-        +lockFunds(jobId, amount, user, provider)
-        +releaseFunds(jobId, actualCost)
-        +refund(jobId, amount)
-        +partialRelease(jobId, amount)
-        
-        -calculatePlatformFee(amount) uint256
-        -splitPayment(amount, provider)
-        
-        <<events>>
-        FundsLocked(jobId, amount)
-        FundsReleased(jobId, provider, amount)
-        Refunded(jobId, user, amount)
-    }
-    
-    class EscrowRecord {
-        <<struct>>
-        bytes32 jobId
-        address user
-        address provider
-        uint256 lockedAmount
-        uint256 releasedAmount
-        bool completed
-    }
-    
-    PaymentEscrow *-- EscrowRecord
-```
-
-**Payment Flow**:
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant M as Marketplace
-    participant E as Escrow
-    participant P as Provider
-    participant Platform as Platform
-    
-    U->>M: createJob()
-    M->>E: lockFunds(jobId, maxCost)
-    E->>E: Lock tokens
-    Note over E: Funds in escrow
-    
-    P->>M: acceptJob()
-    P->>M: startJob()
-    Note over P: Job running...
-    
-    P->>M: completeJob()
-    M->>M: Calculate actualCost
-    M->>E: releaseFunds(jobId, actualCost)
-    
-    E->>E: Calculate fee<br/>platformFee = actualCost * 2%<br/>providerAmount = actualCost * 98%
-    
-    par Payment Distribution
-        E->>P: Transfer 98%
-        E->>Platform: Transfer 2%
-    end
-    
-    alt Refund needed
-        E->>U: Refund (maxCost - actualCost)
-    end
-    
-    Note over E: Escrow completed
-```
-
-### 3.1.4 ReputationSystem Contract
-
-```mermaid
-classDiagram
-    class ReputationSystem {
-        <<contract>>
-        +mapping(address => ReputationScore) scores
-        +mapping(address => Metrics) metrics
-        
-        +updateReputation(provider, newMetrics)
-        +getReputation(provider) uint256
-        +getPenalty(provider) uint256
-        +applyPenalty(provider, reason)
-        +reward(provider, bonus)
-        
-        -calculateScore(metrics) uint256
-        
-        <<events>>
-        ReputationUpdated(provider, newScore)
-        PenaltyApplied(provider, amount)
-        RewardIssued(provider, amount)
-    }
-    
-    class ReputationScore {
-        <<struct>>
-        uint256 score
-        uint256 totalJobs
-        uint256 successfulJobs
-        uint256 disputes
-        uint256 lastUpdated
-    }
-    
-    class Metrics {
-        <<struct>>
-        uint256 uptimePercent
-        uint256 avgResponseTime
-        uint256 completionRate
-        uint256 disputeRate
-    }
-    
-    ReputationSystem *-- ReputationScore
-    ReputationSystem *-- Metrics
-```
-
-**Score Calculation**:
-```
-reputation = (
-  uptime * 0.4 +
-  response * 0.2 +
-  completion * 0.3 +
-  (1 - disputes) * 0.1
-) * 1000
-
-Where:
-- uptime: 실제 가동시간 / 약속시간 (0-1)
-- response: 1 - (avg_response_time / max_acceptable_time) (0-1)
-- completion: completed_jobs / total_jobs (0-1)
-- disputes: dispute_count / total_jobs (0-1)
-
-Score range: 0-1000
-```
-
-## 3.2 Backend Components
-
-### 3.2.1 API Gateway Components
-
-```mermaid
-graph TB
-    subgraph APIGateway["API Gateway (Node.js)"]
-        Auth[Authentication Middleware<br/>━━━━━━━━<br/>• JWT Validation<br/>• Wallet Signature<br/>• Rate Limiting]
-        
-        Router[Router Layer<br/>━━━━━━━━<br/>• /api/v1/gpus/*<br/>• /api/v1/instances/*<br/>• /api/v1/images/*<br/>• /api/v1/marketplace/*]
-        
-        Auth --> Router
-        
-        subgraph Handlers["Handlers"]
-            GPU[GPU Handler<br/>━━━━━━━━<br/>• List GPUs<br/>• Filter/Search<br/>• GPU Details]
-            
-            Image[Image Handler<br/>━━━━━━━━<br/>• Upload to IPFS<br/>• List Images<br/>• Get Metadata]
-            
-            Market[Marketplace Handler<br/>━━━━━━━━<br/>• Create Job<br/>• Job Status<br/>• Job History]
-        end
-        
-        Router --> GPU
-        Router --> Image
-        Router --> Market
-        
-        subgraph Services["Service Layer"]
-            BCS[BlockchainService<br/>━━━━━━━━<br/>• Contract Calls<br/>• Event Listening<br/>• Transaction Management]
-            
-            IPFSS[IPFSService<br/>━━━━━━━━<br/>• Upload/Download<br/>• Pin Management<br/>• Gateway Access]
-            
-            DBS[DatabaseService<br/>━━━━━━━━<br/>• Cache Layer<br/>• Query Optimization<br/>• Connection Pool]
-        end
-        
-        GPU --> BCS
-        GPU --> DBS
-        Image --> IPFSS
-        Market --> BCS
-        Market --> DBS
-    end
-    
-    BCS --> BC[Blockchain]
-    IPFSS --> IPFS[IPFS Network]
-    DBS --> DB[(PostgreSQL)]
-    
-    style APIGateway fill:#e3f2fd
-    style Handlers fill:#f3e5f5
-    style Services fill:#fff3e0
-```
-
-**Key Services**:
-```typescript
-// BlockchainService
-class BlockchainService {
-  async getResource(resourceId: string): Promise<GPUResource>;
-  async createOrder(order: OrderParams): Promise<Transaction>;
-  async watchEvents(eventName: string, callback: Function);
-}
-
-// IPFSService  
-class IPFSService {
-  async uploadImage(image: Buffer): Promise<string>; // returns CID
-  async downloadImage(cid: string): Promise<Buffer>;
-  async pinImage(cid: string): Promise<void>;
-  async getImageMetadata(cid: string): Promise<Metadata>;
-}
-
-// DatabaseService
-class DatabaseService {
-  async cacheGPUList(gpus: GPUResource[]): Promise<void>;
-  async searchGPUs(filters: SearchFilters): Promise<GPUResource[]>;
-  async logInstance(instance: InstanceLog): Promise<void>;
-}
-```
-
-### 3.2.2 Provider Agent Components
-
-```mermaid
-graph TB
-    subgraph Agent["Provider Agent (Go)"]
-        Main[Main Daemon<br/>━━━━━━━━<br/>• Config Loader<br/>• Service Orchestrator<br/>• Graceful Shutdown]
-        
-        Main --> Monitor
-        Main --> IPFSClient
-        Main --> DockerMgr
-        
-        Monitor[Resource Monitor<br/>━━━━━━━━<br/>• GPU Utilization<br/>• Memory Usage<br/>• Temperature<br/>• Power Draw]
-        
-        IPFSClient[IPFS Client<br/>━━━━━━━━<br/>• Image Download<br/>• Pin Management<br/>• Popular Cache<br/>• P2P Communication]
-        
-        DockerMgr[Docker Manager<br/>━━━━━━━━<br/>• Container Lifecycle<br/>• GPU Allocation<br/>• Resource Limits<br/>• Log Streaming]
-        
-        Monitor --> Scheduler
-        IPFSClient --> Scheduler
-        DockerMgr --> Scheduler
-        
-        Scheduler[Job Scheduler<br/>━━━━━━━━<br/>• Job Queue<br/>• Priority Management<br/>• Resource Allocation<br/>• Conflict Resolution]
-        
-        Scheduler --> BCClient
-        
-        BCClient[Blockchain Client<br/>━━━━━━━━<br/>• Event Listener<br/>• Transaction Sender<br/>• State Updater<br/>• Proof Submitter]
-    end
-    
-    BCClient <--> BC[Blockchain Network]
-    IPFSClient <--> IPFS[IPFS Network]
-    DockerMgr <--> Docker[Docker Engine<br/>━━━━━━━━<br/>• nvidia-docker<br/>• GPU Runtime]
-    Monitor <--> GPU[GPU Hardware<br/>━━━━━━━━<br/>• NVIDIA Driver<br/>• CUDA]
-    
-    style Agent fill:#f3e5f5
-```
-
-### 3.2.3 Indexer Service Components
-
-```mermaid
-graph TB
-    subgraph Indexer["Indexer Service (Go)"]
-        Listener[Event Listener<br/>━━━━━━━━<br/>• Subscribe to Events<br/>• Parse Logs<br/>• Queue Processing]
-        
-        Listener --> Processor
-        
-        Processor[Event Processor<br/>━━━━━━━━<br/>• Validate Data<br/>• Transform Schema<br/>• Batch Operations<br/>• Error Handling]
-        
-        Processor --> Writer
-        
-        Writer[Database Writer<br/>━━━━━━━━<br/>• Connection Pool<br/>• Transactions<br/>• Retry Logic<br/>• Conflict Resolution]
-        
-        Writer --> GQL
-        
-        GQL[GraphQL Server<br/>━━━━━━━━<br/>• Schema Definition<br/>• Resolvers<br/>• DataLoader<br/>• Redis Cache]
-    end
-    
-    BC[Blockchain] -->|Events| Listener
-    Writer --> DB[(PostgreSQL)]
-    GQL --> API[API Gateway]
-    GQL --> Cache[(Redis)]
-    
-    style Indexer fill:#e1f5fe
-```
-
-**GraphQL Schema**:
-```graphql
-type GPUResource {
-  id: ID!
-  provider: String!
-  gpuModel: String!
-  vcpu: Int!
-  memoryGB: Int!
-  pricePerHour: Float!
-  available: Boolean!
-  reputation: Int!
-  location: String
-  uptime: Float!
-}
-
-type Job {
-  id: ID!
-  user: String!
-  provider: String!
-  resourceId: ID!
-  imageCID: String!
-  status: JobStatus!
-  startTime: Int
-  endTime: Int
-  totalCost: Float
-}
-
-enum JobStatus {
-  PENDING
-  RUNNING
-  COMPLETED
-  FAILED
-  DISPUTED
-}
-
-type Query {
-  gpus(
-    filters: GPUFilters
-    sort: SortOptions
-    limit: Int
-    offset: Int
-  ): [GPUResource!]!
-  
-  gpu(id: ID!): GPUResource
-  
-  jobs(
-    user: String
-    provider: String
-    status: JobStatus
-  ): [Job!]!
-  
-  job(id: ID!): Job
-  
-  myJobs(address: String!): [Job!]!
-}
-
-type Subscription {
-  jobStatusChanged(jobId: ID!): Job
-  newGPUAvailable: GPUResource
-}
-```
-
-### 3.2.4 Oracle Service Components
-
-```mermaid
-graph TB
-    subgraph Oracle["Oracle Service"]
-        Validator[Validator<br/>━━━━━━━━━━━━━━━━━━]
-        
-        subgraph Checks["Validation Checks"]
-            Uptime[Uptime Checker<br/>━━━━━━━━<br/>• Ping Endpoints<br/>• Verify Heartbeat<br/>• Measure Latency]
-            
-            Proof[Proof Verifier<br/>━━━━━━━━<br/>• Challenge-Response<br/>• Data Possession<br/>• Cryptographic Proof]
-            
-            Perf[Performance Monitor<br/>━━━━━━━━<br/>• Response Times<br/>• Throughput<br/>• Resource Usage]
-        end
-        
-        Validator --> Uptime
-        Validator --> Proof
-        Validator --> Perf
-        
-        Uptime --> Aggregator
-        Proof --> Aggregator
-        Perf --> Aggregator
-        
-        Aggregator[Aggregator<br/>━━━━━━━━<br/>• Collect Results<br/>• Calculate Scores<br/>• Generate Evidence<br/>• Anomaly Detection]
-        
-        Aggregator --> Reporter
-        
-        Reporter[Blockchain Reporter<br/>━━━━━━━━<br/>• Submit Results<br/>• Update Reputation<br/>• Trigger Penalties<br/>• Gas Optimization]
-    end
-    
-    Provider[Provider Agent] -.->|Heartbeat<br/>Challenge-Response| Validator
-    Reporter --> BC[Blockchain<br/>━━━━━━━━<br/>• ReputationSystem<br/>• Marketplace]
-    
-    style Oracle fill:#ffe0b2
-    style Checks fill:#fff9c4
-```
-
-## 3.3 Frontend Components
-
-```mermaid
-graph TB
-    subgraph Frontend["React Frontend"]
-        App[App.tsx<br/>━━━━━━━━<br/>• Router Setup<br/>• Global State<br/>• Theme Provider<br/>• Web3 Context]
-        
-        App --> Wallet
-        App --> Browser
-        App --> Instance
-        
-        Wallet[WalletManager<br/>━━━━━━━━<br/>• MetaMask Connect<br/>• Account State<br/>• Balance Display<br/>• Network Switch]
-        
-        Browser[GPUBrowser<br/>━━━━━━━━<br/>• GPU List<br/>• Filter/Search<br/>• Sort Options<br/>• Pagination]
-        
-        Instance[InstanceManager<br/>━━━━━━━━<br/>• Create Instance<br/>• Monitor Status<br/>• View Logs<br/>• Stop/Restart]
-        
-        subgraph Services["Shared Services"]
-            Web3[Web3Service<br/>━━━━━━━━<br/>• ethers.js<br/>• Contract Calls<br/>• Event Listening]
-            
-            IPFSS[IPFSService<br/>━━━━━━━━<br/>• ipfs-http-client<br/>• Upload/Download<br/>• Pin Status]
-            
-            APIS[APIService<br/>━━━━━━━━<br/>• axios<br/>• REST Calls<br/>• Error Handling]
-            
-            WSS[WebSocketService<br/>━━━━━━━━<br/>• socket.io-client<br/>• Real-time Updates<br/>• Auto-reconnect]
-        end
-        
-        Wallet --> Web3
-        Browser --> APIS
-        Browser --> Web3
-        Instance --> Web3
-        Instance --> WSS
-        Instance --> IPFSS
-    end
-    
-    Web3 --> BC[Blockchain]
-    IPFSS --> IPFS[IPFS]
-    APIS --> API[API Gateway]
-    WSS --> API
-    
-    style Frontend fill:#e8f5e9
-    style Services fill:#fff3e0
-```
-
 ---
 
-# Level 4: Data Flow Diagrams
+# Key Processes
 
-## 4.1 Job Creation Flow
+## User Journey: GPU 대여 프로세스
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant U as User
-    participant F as Frontend
+    participant P as Platform
+    participant Provider as Provider
     participant BC as Blockchain
-    participant IPFS as IPFS Network
-    participant PA as Provider Agent
-    participant D as Docker
-    participant O as Oracle
     
-    Note over U,F: Phase 1: Setup
-    U->>F: Select GPU from marketplace
-    F->>U: Display GPU details & pricing
+    Note over U,Provider: 1. 검색 & 선택
+    U->>P: GPU 검색 (스펙, 가격)
+    P->>U: 사용 가능한 GPU 리스트
+    U->>U: GPU 선택
     
-    U->>F: Upload Docker Image
-    F->>IPFS: Upload image data
-    IPFS->>F: Return CID (QmXxxx)
-    F->>U: Show CID & confirm
+    Note over U,BC: 2. 작업 생성 & 결제
+    U->>P: Docker 이미지 업로드
+    P->>U: 이미지 ID (CID) 반환
+    U->>BC: 작업 생성 + 토큰 예치
+    BC->>BC: 토큰 에스크로에 보관
     
-    Note over U,BC: Phase 2: Job Creation
-    U->>BC: createJob(resourceId, CID, duration)
-    BC->>BC: Validate & lock tokens in escrow
-    BC->>BC: Emit JobCreated event
-    BC->>U: Transaction confirmed
+    Note over Provider,BC: 3. Provider 수락 & 실행
+    BC->>Provider: 작업 알림
+    Provider->>BC: 작업 수락
+    Provider->>Provider: 컨테이너 실행
+    Provider->>BC: 실행 시작 확인
     
-    Note over PA: Phase 3: Provider Acceptance
-    BC->>PA: Event: JobCreated
-    PA->>PA: Check if job is for this provider
-    PA->>BC: acceptJob(jobId)
-    BC->>BC: Update job status: Accepted
-    BC->>U: Notification: Job accepted
+    Note over U,Provider: 4. 모니터링
+    U->>Provider: 실시간 로그 확인
+    Provider->>U: 진행 상황 전송
     
-    Note over PA,D: Phase 4: Execution
-    PA->>IPFS: Download image from CID
-    IPFS->>PA: Stream image data
-    PA->>PA: Verify image integrity
-    
-    PA->>D: Load image to Docker
-    PA->>D: Create container with GPU
-    D->>PA: Container ID & status
-    
-    PA->>BC: startJob(jobId)
-    BC->>BC: Update status: Running
-    BC->>BC: Start billing clock
-    BC->>U: Notification: Job running
-    
-    Note over PA,D: Job Executing...
-    loop Health Check
-        O->>PA: Challenge (prove data possession)
-        PA->>O: Response with proof
-        O->>BC: Submit validation result
-    end
-    
-    Note over PA,BC: Phase 5: Completion
-    D->>PA: Container exited
-    PA->>D: Stop & cleanup
-    
-    PA->>BC: completeJob(jobId)
-    BC->>BC: Calculate final cost
-    BC->>BC: Release payment (98% to provider, 2% to platform)
-    BC->>BC: Update reputation
-    BC->>U: Job completed + cost breakdown
-    
-    alt If overpaid
-        BC->>U: Refund excess tokens
-    end
+    Note over Provider,BC: 5. 완료 & 정산
+    Provider->>BC: 작업 완료 보고
+    BC->>BC: 사용 시간 계산
+    BC->>Provider: 수익 지급 (98%)
+    BC->>P: 플랫폼 수수료 (2%)
+    BC->>U: 초과 금액 환불
 ```
 
-## 4.2 IPFS Image Distribution Flow
+## Oracle의 신뢰 보증
 
 ```mermaid
 sequenceDiagram
-    autonumber
-    participant U as User
-    participant IPFS as IPFS Network
-    participant DHT as DHT (Distributed Hash Table)
-    participant P1 as Provider 1
-    participant P2 as Provider 2
-    participant P3 as Provider 3
-    
-    Note over U,IPFS: Phase 1: Upload
-    U->>IPFS: Upload Docker image (200MB)
-    IPFS->>IPFS: Chunk image (256KB blocks)
-    IPFS->>IPFS: Calculate CID for each chunk
-    IPFS->>IPFS: Build Merkle DAG
-    IPFS->>DHT: Announce CID availability
-    IPFS->>U: Return root CID (QmXxxx)
-    
-    Note over U,DHT: Phase 2: Metadata Storage
-    U->>IPFS: Add metadata (name, size, tags)
-    IPFS->>DHT: Store CID → Metadata mapping
-    
-    Note over P1,P3: Phase 3: Auto-caching
-    loop Every 5 minutes
-        P1->>IPFS: Query popular images
-        IPFS->>P1: Return top 10 CIDs
-        P1->>P1: Check local cache
-        
-        alt Image not cached
-            P1->>DHT: Find peers with CID
-            DHT->>P1: Return peer list
-            P1->>P2: Request chunks
-            P2->>P1: Send chunks
-            P1->>P1: Verify & assemble
-            P1->>IPFS: Pin CID locally
-        end
-    end
-    
-    Note over P3: Phase 4: Job Assignment
-    activate P3
-    Note over P3: Provider receives job with CID
-    
-    P3->>P3: Check local cache
-    
-    alt Image cached
-        Note over P3: Fast path
-        P3->>P3: Load from local storage
-    else Image not cached
-        Note over P3: Fetch path
-        P3->>DHT: Query: Who has QmXxxx?
-        DHT->>P3: Peers: [P1, P2, U]
-        
-        par Fetch from multiple peers
-            P3->>P1: Get chunks 1-100
-            P3->>P2: Get chunks 101-200
-            P3->>U: Get chunks 201-300
-        end
-        
-        P1->>P3: Send chunks
-        P2->>P3: Send chunks
-        U->>P3: Send chunks
-        
-        P3->>P3: Verify all chunks
-        P3->>P3: Assemble image
-        P3->>IPFS: Pin locally for future use
-    end
-    
-    deactivate P3
-    
-    Note over P3: Phase 5: Cleanup
-    loop Daily
-        P3->>P3: Check pinned images
-        P3->>P3: Remove unpopular (not used in 30 days)
-        P3->>IPFS: Unpin CID
-    end
-```
-
-## 4.3 Payment & Reputation Flow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant U as User
-    participant M as Marketplace
-    participant E as Escrow
-    participant P as Provider
-    participant R as Reputation
-    participant Token as GPUToken
-    
-    Note over U,M: Phase 1: Job Initiation
-    U->>Token: Approve Marketplace
-    Token->>U: Approval confirmed
-    
-    U->>M: createJob(resourceId, imageCID, 3600s)
-    M->>M: Get GPU pricing: 10 tokens/hour
-    M->>M: Calculate maxCost: 10 tokens
-    
-    M->>Token: transferFrom(user, escrow, 10 tokens)
-    Token->>E: Transfer 10 tokens
-    E->>E: Lock funds for jobId
-    M->>M: Create job record
-    M->>U: Job created (jobId)
-    
-    Note over P: Phase 2: Job Execution
-    M->>P: JobCreated event
-    P->>M: acceptJob(jobId)
-    P->>M: startJob(jobId)
-    M->>M: Record startTime: T0
-    
-    Note over P: Job running for 2700 seconds (45 minutes)
-    
-    Note over P,M: Phase 3: Completion
-    P->>M: completeJob(jobId)
-    M->>M: Record endTime: T0 + 2700s
-    M->>M: Calculate actual cost
-    Note over M: actualDuration = 2700s<br/>actualCost = (10 tokens/hour) * (2700/3600)<br/>= 7.5 tokens
-    
-    Note over M,E: Phase 4: Payment Distribution
-    M->>E: releaseFunds(jobId, 7.5 tokens)
-    E->>E: Calculate distribution
-    Note over E: providerAmount = 7.5 * 0.98 = 7.35 tokens<br/>platformFee = 7.5 * 0.02 = 0.15 tokens
-    
-    par Payment Transfer
-        E->>Token: transfer(provider, 7.35 tokens)
-        Token->>P: Receive 7.35 tokens
-        E->>Token: transfer(platform, 0.15 tokens)
-    end
-    
-    alt Refund Excess
-        E->>Token: transfer(user, 2.5 tokens)
-        Token->>U: Refund 2.5 tokens
-    end
-    
-    Note over M,R: Phase 5: Reputation Update
-    M->>R: updateReputation(provider, metrics)
-    
-    R->>R: Fetch current metrics
-    Note over R: Current:<br/>totalJobs: 100<br/>successfulJobs: 98<br/>avgUptime: 99.2%<br/>disputes: 1
-    
-    R->>R: Add new job data
-    Note over R: New metrics:<br/>totalJobs: 101<br/>successfulJobs: 99<br/>Duration: 2700s (100% of expected)<br/>Response: instant<br/>No disputes
-    
-    R->>R: Calculate new score
-    Note over R: score = (<br/>  uptime: 0.992 * 0.4 +<br/>  response: 1.0 * 0.2 +<br/>  completion: 0.98 * 0.3 +<br/>  disputes: 0.99 * 0.1<br/>) * 1000<br/>= 981 points
-    
-    R->>M: Reputation updated: 981
-    M->>P: New reputation score
-    
-    Note over U,P: Transaction Complete
-```
-
-## 4.4 Oracle Validation Flow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant BC as Blockchain
     participant O as Oracle
     participant P as Provider
-    participant IPFS as IPFS
-    participant R as Reputation
+    participant BC as Blockchain
     
-    Note over BC,P: Phase 1: Heartbeat Monitoring
-    loop Every 60 seconds
-        P->>O: Heartbeat + Metrics
-        Note over P: {<br/>  timestamp: now,<br/>  jobsRunning: 3,<br/>  gpuUtil: 85%,<br/>  uptime: 99.5%<br/>}
+    loop 매 1분
+        O->>P: Heartbeat 요청
+        P->>O: 상태 응답
         
-        O->>O: Record heartbeat
-        O->>O: Check if on-time
-        
-        alt Heartbeat missed
-            O->>O: Increment miss counter
-            Note over O: missCount++
-            
-            alt Miss count > 3
-                O->>BC: reportDowntime(provider)
-                BC->>R: applyPenalty(provider, "downtime")
-                R->>R: Reduce reputation by 50 points
-            end
+        alt 정상 응답
+            O->>BC: 가용성 확인 ✓
+        else 응답 없음
+            O->>BC: 다운타임 보고
+            BC->>BC: 평판 점수 하락
         end
     end
     
-    Note over O,P: Phase 2: Random Challenge
-    O->>O: Generate random challenge
-    Note over O: Select random job from provider<br/>jobId: 0xabc...<br/>imageCID: QmXxxx
+    Note over O,P: 무작위 검증
+    O->>P: Challenge (데이터 증명 요청)
+    P->>O: Response (증거 제출)
+    O->>O: 검증
     
-    O->>O: Create challenge
-    Note over O: {<br/>  cid: QmXxxx,<br/>  offset: random(0, fileSize),<br/>  length: 1024 bytes,<br/>  nonce: random(),<br/>  expiry: now + 30s<br/>}
-    
-    O->>P: Send challenge
-    
-    Note over P: Phase 3: Provider Response
-    P->>P: Receive challenge
-    P->>IPFS: Read chunk at offset
-    IPFS->>P: Return chunk data
-    P->>P: Sign response
-    P->>O: Send response
-    Note over P: {<br/>  cid: QmXxxx,<br/>  data: [chunk bytes],<br/>  signature: sign(data, privateKey)<br/>}
-    
-    Note over O: Phase 4: Verification
-    O->>O: Check response time
-    
-    alt Response > 30s
-        O->>BC: reportTimeout(provider, jobId)
-        BC->>R: applyPenalty(provider, "timeout")
-    else Response within 30s
-        O->>IPFS: Fetch expected chunk
-        IPFS->>O: Return chunk
-        
-        O->>O: Compare chunks
-        
-        alt Data mismatch
-            O->>BC: reportInvalidData(provider, jobId)
-            BC->>R: applyPenalty(provider, "data_fraud")
-            R->>R: Severe penalty: -200 points
-            BC->>BC: Slash provider stake
-        else Data matches
-            O->>O: Verify signature
-            
-            alt Invalid signature
-                O->>BC: reportInvalidSignature(provider)
-                BC->>R: applyPenalty(provider, "invalid_sig")
-            else Valid
-                O->>O: Record successful validation
-                Note over O: Success! Provider passed challenge
-            end
-        end
-    end
-    
-    Note over O,BC: Phase 5: Periodic Reporting
-    loop Every 1 hour
-        O->>O: Aggregate validation results
-        Note over O: For provider 0x123:<br/>- Heartbeats: 60/60 ✓<br/>- Challenges: 10/10 ✓<br/>- Avg response: 2.3s<br/>- Uptime: 100%
-        
-        O->>BC: submitValidationReport(provider, results)
-        BC->>R: updateMetrics(provider, metrics)
-        R->>R: Recalculate reputation
-        R->>BC: New reputation: 985 (+4)
-    end
-    
-    Note over BC,R: Phase 6: Dispute Resolution
-    alt User disputes job
-        BC->>O: Investigate dispute
-        Note over BC: disputeId: 0xdef<br/>jobId: 0xabc<br/>reason: "job failed"
-        
-        O->>O: Collect evidence
-        O->>P: Request job logs
-        P->>O: Send logs
-        O->>IPFS: Verify image integrity
-        O->>BC: Check on-chain records
-        
-        O->>O: Analyze evidence
-        
-        alt Provider at fault
-            O->>BC: resolveDispute(disputeId, "provider_fault")
-            BC->>BC: Refund user
-            BC->>R: applyPenalty(provider, "dispute_lost")
-        else User at fault
-            O->>BC: resolveDispute(disputeId, "user_fault")
-            BC->>BC: Pay provider
-        else Inconclusive
-            O->>BC: resolveDispute(disputeId, "split_payment")
-            BC->>BC: Split payment 50/50
-        end
+    alt 검증 성공
+        O->>BC: 신뢰도 유지
+    else 검증 실패
+        O->>BC: 패널티 부과
     end
 ```
 
 ---
-
-# Security Architecture
-
-## 5.1 Threat Model & Mitigations
-
-```mermaid
-graph TB
-    subgraph Threats["Security Threats"]
-        T1[Smart Contract<br/>━━━━━━━━<br/>• Reentrancy<br/>• Integer Overflow<br/>• Front-running<br/>• Access Control]
-        
-        T2[IPFS<br/>━━━━━━━━<br/>• Data Availability<br/>• Content Poisoning<br/>• Sybil Attacks<br/>• DHT Pollution]
-        
-        T3[Provider Agent<br/>━━━━━━━━<br/>• Container Escape<br/>• Resource Exhaustion<br/>• Data Exfiltration<br/>• Malicious Images]
-        
-        T4[Network<br/>━━━━━━━━<br/>• DDoS<br/>• Man-in-Middle<br/>• Replay Attacks<br/>• Eclipse Attacks]
-    end
-    
-    subgraph Mitigations["Security Mitigations"]
-        M1[Smart Contract Security<br/>━━━━━━━━<br/>✓ ReentrancyGuard<br/>✓ SafeMath (0.8.x)<br/>✓ Access Control<br/>✓ Formal Verification<br/>✓ Audits]
-        
-        M2[IPFS Security<br/>━━━━━━━━<br/>✓ Incentivized Pinning<br/>✓ Content Scanning<br/>✓ Stake Requirements<br/>✓ Oracle Validation<br/>✓ Backup Clusters]
-        
-        M3[Container Security<br/>━━━━━━━━<br/>✓ Docker Isolation<br/>✓ seccomp Profiles<br/>✓ Resource Limits<br/>✓ Network Policies<br/>✓ Image Scanning]
-        
-        M4[Network Security<br/>━━━━━━━━<br/>✓ DDoS Protection<br/>✓ TLS/SSL<br/>✓ Nonce Validation<br/>✓ Peer Reputation<br/>✓ Rate Limiting]
-    end
-    
-    T1 --> M1
-    T2 --> M2
-    T3 --> M3
-    T4 --> M4
-    
-    style Threats fill:#ffebee
-    style Mitigations fill:#e8f5e9
-```
 
 ## 5.2 Defense in Depth
 
@@ -1757,76 +618,6 @@ graph TB
     style Blockchain fill:#f3e5f5
     style IPFS fill:#fff9c4
     style Business fill:#c8e6c9
-```
-
-## 7.3 Alert Rules
-
-```yaml
-# Example Prometheus Alert Rules
-groups:
-  - name: critical_alerts
-    interval: 30s
-    rules:
-      # Blockchain alerts
-      - alert: BlockchainNodeDown
-        expr: up{job="blockchain"} == 0
-        for: 2m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Blockchain node {{ $labels.instance }} is down"
-          
-      - alert: BlockProductionStalled
-        expr: increase(block_height[5m]) == 0
-        for: 5m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Block production has stalled"
-          
-      # API alerts
-      - alert: HighErrorRate
-        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
-        for: 5m
-        labels:
-          severity: critical
-        annotations:
-          summary: "High error rate: {{ $value }}%"
-          
-      - alert: HighLatency
-        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "High API latency: {{ $value }}s"
-          
-      # IPFS alerts
-      - alert: IPFSLowPeerCount
-        expr: ipfs_connected_peers < 10
-        for: 10m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Low IPFS peer count: {{ $value }}"
-          
-      # Database alerts
-      - alert: DatabaseHighLoad
-        expr: pg_stat_activity_count > 100
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "High database connection count: {{ $value }}"
-          
-      # Business alerts
-      - alert: NoJobsCreated
-        expr: increase(jobs_created_total[1h]) == 0
-        for: 1h
-        labels:
-          severity: warning
-        annotations:
-          summary: "No jobs created in the last hour"
 ```
 
 ---
