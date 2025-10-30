@@ -1,4 +1,4 @@
-# GPU Rental Platform - Architecture Specification (C4 Model with Mermaid)
+# 리버밴드 / GPU Rental Platform - Architecture Specification (C4 Model with Mermaid)
 
 ## Document Information
 
@@ -840,74 +840,6 @@ graph TB
     style Agent fill:#f3e5f5
 ```
 
-**Component Details**:
-```go
-// Resource Monitor
-type ResourceMonitor struct {
-    gpuDriver    GPUDriver
-    sysInfo      SystemInfo
-    reportTicker *time.Ticker
-}
-
-func (r *ResourceMonitor) CollectMetrics() Metrics {
-    return Metrics{
-        GPUUtil:       r.gpuDriver.GetUtilization(),
-        MemoryUsed:    r.sysInfo.GetMemoryUsage(),
-        Temperature:   r.gpuDriver.GetTemperature(),
-        PowerDraw:     r.gpuDriver.GetPowerDraw(),
-    }
-}
-
-// Docker Manager
-type DockerManager struct {
-    client *docker.Client
-}
-
-func (d *DockerManager) LaunchJob(job Job) (containerID string, err error) {
-    // 1. Pull image from IPFS
-    imageCID := job.ImageCID
-    imageData := d.ipfs.GetImage(imageCID)
-    
-    // 2. Load into Docker
-    d.client.LoadImage(imageData)
-    
-    // 3. Create container with GPU access
-    container := d.client.CreateContainer(docker.CreateContainerOptions{
-        Config: &docker.Config{
-            Image: job.ImageName,
-        },
-        HostConfig: &docker.HostConfig{
-            Runtime: "nvidia",
-            DeviceRequests: []docker.DeviceRequest{{
-                Capabilities: [][]string{{"gpu"}},
-            }},
-        },
-    })
-    
-    // 4. Start container
-    d.client.StartContainer(container.ID)
-    
-    return container.ID, nil
-}
-
-// IPFS Client
-type IPFSClient struct {
-    shell *shell.Shell
-}
-
-func (i *IPFSClient) CachePopularImages() {
-    // Get popular images from marketplace
-    popular := i.getPopularImages()
-    
-    for _, cid := range popular {
-        if !i.HasLocal(cid) {
-            i.shell.Pin(cid)
-            log.Printf("Cached image: %s", cid)
-        }
-    }
-}
-```
-
 ### 3.2.3 Indexer Service Components
 
 ```mermaid
@@ -1035,55 +967,6 @@ graph TB
     style Checks fill:#fff9c4
 ```
 
-**Validation Protocol**:
-```go
-// Challenge-Response for IPFS Data Possession
-type Challenge struct {
-    CID        string
-    Offset     int64  // Random offset in file
-    Length     int    // Bytes to return
-    Nonce      string
-    Expiry     int64
-}
-
-type Response struct {
-    CID        string
-    Data       []byte // Requested chunk
-    Signature  []byte // Provider's signature
-}
-
-func (o *Oracle) ValidateDataPossession(
-    provider string,
-    imageCID string,
-) (bool, error) {
-    // 1. Generate random challenge
-    challenge := Challenge{
-        CID:    imageCID,
-        Offset: rand.Int63n(imageSize),
-        Length: 1024,
-        Nonce:  generateNonce(),
-        Expiry: time.Now().Add(30 * time.Second).Unix(),
-    }
-    
-    // 2. Send to provider
-    response := o.sendChallenge(provider, challenge)
-    
-    // 3. Verify response
-    // 3a. Get expected data from our IPFS node
-    expected := o.ipfs.GetChunk(imageCID, challenge.Offset, challenge.Length)
-    
-    // 3b. Compare
-    if !bytes.Equal(response.Data, expected) {
-        return false, errors.New("data mismatch")
-    }
-    
-    // 3c. Verify signature
-    valid := o.verifySignature(provider, response)
-    
-    return valid, nil
-}
-```
-
 ## 3.3 Frontend Components
 
 ```mermaid
@@ -1126,78 +1009,6 @@ graph TB
     
     style Frontend fill:#e8f5e9
     style Services fill:#fff3e0
-```
-
-**Key Components**:
-```typescript
-// WalletManager.tsx
-const WalletManager = () => {
-  const [account, setAccount] = useState<string | null>(null);
-  const [provider, setProvider] = useState<BrowserProvider | null>(null);
-  
-  const connect = async () => {
-    if (window.ethereum) {
-      const provider = new BrowserProvider(window.ethereum);
-      const accounts = await provider.send("eth_requestAccounts", []);
-      setAccount(accounts[0]);
-      setProvider(provider);
-    }
-  };
-  
-  return (
-    <WalletContext.Provider value={{ account, provider, connect }}>
-      {children}
-    </WalletContext.Provider>
-  );
-};
-
-// GPUBrowser.tsx
-const GPUBrowser = () => {
-  const [gpus, setGPUs] = useState<GPUResource[]>([]);
-  const [filters, setFilters] = useState<Filters>({});
-  
-  useEffect(() => {
-    // GraphQL query via Indexer
-    const fetchGPUs = async () => {
-      const result = await graphqlClient.query({
-        query: GET_GPUS,
-        variables: { filters }
-      });
-      setGPUs(result.data.gpus);
-    };
-    fetchGPUs();
-  }, [filters]);
-  
-  return (
-    <div>
-      <FilterPanel onChange={setFilters} />
-      <GPUList gpus={gpus} onSelect={handleSelect} />
-    </div>
-  );
-};
-
-// InstanceManager.tsx
-const InstanceManager = () => {
-  const { account, provider } = useWallet();
-  const [instances, setInstances] = useState<Instance[]>([]);
-  
-  const launchInstance = async (gpuId: string, imageCID: string) => {
-    // 1. Create order on blockchain
-    const contract = new Contract(MARKETPLACE_ADDR, ABI, provider);
-    const tx = await contract.createOrder(gpuId, imageCID, duration);
-    await tx.wait();
-    
-    // 2. Wait for provider to accept
-    // WebSocket notification
-  };
-  
-  return (
-    <div>
-      <InstanceList instances={instances} />
-      <LaunchButton onClick={launchInstance} />
-    </div>
-  );
-};
 ```
 
 ---
