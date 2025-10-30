@@ -253,41 +253,6 @@ sequenceDiagram
 
 ---
 
-# Security Architecture
-
-## 5.1 Threat Model & Mitigations
-
-```mermaid
-graph TB
-    subgraph Threats["Security Threats"]
-        T1[Smart Contract<br/>━━━━━━━━<br/>• Reentrancy<br/>• Integer Overflow<br/>• Front-running<br/>• Access Control]
-        
-        T2[IPFS<br/>━━━━━━━━<br/>• Data Availability<br/>• Content Poisoning<br/>• Sybil Attacks<br/>• DHT Pollution]
-        
-        T3[Provider Agent<br/>━━━━━━━━<br/>• Container Escape<br/>• Resource Exhaustion<br/>• Data Exfiltration<br/>• Malicious Images]
-        
-        T4[Network<br/>━━━━━━━━<br/>• DDoS<br/>• Man-in-Middle<br/>• Replay Attacks<br/>• Eclipse Attacks]
-    end
-    
-    subgraph Mitigations["Security Mitigations"]
-        M1[Smart Contract Security<br/>━━━━━━━━<br/>✓ ReentrancyGuard<br/>✓ SafeMath (0.8.x)<br/>✓ Access Control<br/>✓ Formal Verification<br/>✓ Audits]
-        
-        M2[IPFS Security<br/>━━━━━━━━<br/>✓ Incentivized Pinning<br/>✓ Content Scanning<br/>✓ Stake Requirements<br/>✓ Oracle Validation<br/>✓ Backup Clusters]
-        
-        M3[Container Security<br/>━━━━━━━━<br/>✓ Docker Isolation<br/>✓ seccomp Profiles<br/>✓ Resource Limits<br/>✓ Network Policies<br/>✓ Image Scanning]
-        
-        M4[Network Security<br/>━━━━━━━━<br/>✓ DDoS Protection<br/>✓ TLS/SSL<br/>✓ Nonce Validation<br/>✓ Peer Reputation<br/>✓ Rate Limiting]
-    end
-    
-    T1 --> M1
-    T2 --> M2
-    T3 --> M3
-    T4 --> M4
-    
-    style Threats fill:#ffebee
-    style Mitigations fill:#e8f5e9
-```
-
 ## 5.2 Defense in Depth
 
 ```mermaid
